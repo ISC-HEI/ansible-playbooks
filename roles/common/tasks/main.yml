@@ -1,3 +1,6 @@
+- name: Basic checks
+  include_tasks: root.yml
+
 - name: Detect os
   include_tasks: os-detect.yml
 

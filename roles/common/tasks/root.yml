@@ -1,3 +1,11 @@
+- name: ansible_user check
+  ansible.builtin.fail:
+    msg: "ansible_user must be root or included in admins, ansible_user:{{ ansible_user }}, admins: {{ admins }}"
+  when:
+    - ansible_user != "root"
+    - admins is not contains(ansible_user)
+
 - name: Check sudo root
   become: true
-  command: whoami
+  ansible.builtin.command: whoami
+  changed_when: false
