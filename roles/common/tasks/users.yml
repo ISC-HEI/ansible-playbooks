@@ -37,11 +37,11 @@
   with_items:
     - "{{ xuid_users }}"
 
-- name: users authorized_key
+- name: users authorized_keys
   ansible.posix.authorized_key:
     manage_dir: true
     user: "{{ item.name }}"
-    key: "{{ lookup('file', 'conf/authorized_key/{{ item.name }}.pub') }}"
+    key: "{{ lookup('file', 'conf/authorized_keys/{{ item.name }}.pub') }}"
   with_items:
     - "{{ xuid_users }}"
 
