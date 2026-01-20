@@ -1,0 +1,54 @@
+- name: Check variables
+  assert:
+    that:
+      - mailer is not undefined
+      - mailer.server is not undefined
+      - mailer.user is not undefined
+      - mailer.password is not undefined
+      - mailer.dest is not undefined
+
+- name: install msmtp
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 86400
+    pkg:
+      - msmtp
+      - msmtp-mta
+
+- name: configure msmtp - 1
+  register: service_conf_1
+  ansible.builtin.blockinfile:
+    path: /etc/msmtprc
+    block: |
+      account isc_hevs_account
+      port 587
+      tls on
+      host {{ mailer.server }}
+      auth on
+      user {{ mailer.user }}
+      password {{ mailer.password }}
+      set_from_header on
+      allow_from_override off
+      from_full_name {{ ansible_hostname }}
+      from {{ mailer.user }}
+    create: true
+
+- name: configure msmtp - 2
+  register: service_conf_2
+  ansible.builtin.lineinfile:
+    path: /etc/msmtprc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  loop:
+    - { state: present, regexp: '(?i)^account.*default', line: 'account default: isc_hevs_account' }
+    - { state: present, regexp: '(?i)^aliases', line: 'aliases /etc/aliases' }
+- name: configure msmtp - 3
+  ansible.builtin.copy:
+    content: |
+      # msmtp does not support redefinition
+      postmaster: root
+      root: default
+      default: {{ mailer.dest }}
+    dest: /etc/aliases
+  register: service_conf_3

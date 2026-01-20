@@ -1,0 +1,2 @@
+CONF_REPO_URL=git@github.com:ISC-HEI/ansible-playbooks-conf.git
+VAULT_PASSWORD_FILE=~/.conf/ansible/here_goes_your_password.pass

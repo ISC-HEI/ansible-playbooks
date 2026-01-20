@@ -1,0 +1,3 @@
+- name: Check sudo root
+  become: true
+  command: whoami

@@ -1,0 +1,101 @@
+- name: limit journal size
+  lineinfile:
+    dest: /etc/systemd/journald.conf
+    insertafter: '\[Journal\]'
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  register: service_conf
+  loop:
+    - { state: present, regexp: '(?i)^SystemMaxUse=', line: 'SystemMaxUse=256M' }
+
+- name: Restart journald
+  ansible.builtin.systemd:
+    state: restarted
+    name: "systemd-journald"
+  when: service_conf.changed
+
+- name: logrotate configuration
+  vars:
+    lp_logrotate_confd:
+      # maybe depend on nvidia-dcgm
+      - path: nvidia-dcgm
+        conf: |
+          /var/log/nv-hostengine.log {
+                 create
+                 daily
+                 rotate 3
+                 size 128M
+                 compress
+                 delaycompress
+                 missingok
+                 postrotate
+                    /bin/systemctl restart nvidia-dcgm
+                 endscript
+          }
+  ansible.builtin.blockinfile:
+    path: "/etc/logrotate.d/{{ item.path }}"
+    block: "{{ item.conf }}"
+    create: true
+  register: service_conf
+  loop: "{{ lp_logrotate_confd }}"
+
+- name: run logrotate
+  ansible.builtin.command:
+    cmd:  logrotate --force /etc/logrotate.conf
+  when: service_conf.changed
+
+##############################################################################
+- name: remote syslog
+  when:
+    - syslog_server is not undefined
+##############################################################################
+  block:
+    - name: Gather service facts
+      service_facts:
+    - name: d
+      debug:
+        msg: "ansible_facts['services']['rsyslog.service'] {{ ansible_facts['services']['rsyslog.service'] }}"
+
+    - name: Warn if not rsyslog
+      fail:
+        msg: "Only rsyslog is supported"
+      when: ansible_facts['services']['rsyslog.service'] is not defined or ansible_facts['services']['rsyslog.service']['status'] != 'enabled'
+      ignore_errors: True
+    - name: server?
+      when: ansible_hostname == syslog_server
+      block:
+        - name: Confiure remote log
+          ansible.builtin.blockinfile:
+            path: /etc/rsyslog.d/51-remote-server.conf
+            block: |
+              module(load="imudp")
+              module(load="imtcp")
+
+              input(type="imudp" port="514")
+              input(type="imtcp" port="514")
+
+              # Time should be rsyslog server time
+              $template myFormat,"%timegenerated% %HOSTNAME% %syslogtag%%msg%\n"
+              $ActionFileDefaultTemplate myFormat
+            create: true
+          register: service_conf
+        - name: Restart log
+          ansible.builtin.systemd:
+            state: restarted
+            name: "rsyslog"
+          when: service_conf.changed
+    - name: client?
+      when: ansible_hostname != syslog_server
+      block:
+        - name: Confiure remote log
+          ansible.builtin.lineinfile:
+            path: /etc/rsyslog.d/51-remote.conf
+            line: '*.* action(type="omfwd" target="{{ syslog_server }}" protocol="udp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
+            create: true
+          register: service_conf
+        - name: Restart log
+          ansible.builtin.systemd:
+            state: restarted
+            name: "rsyslog"
+          when: service_conf.changed

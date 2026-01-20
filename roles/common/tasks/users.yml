@@ -1,0 +1,102 @@
+#- name: debug
+#  set_fact:
+#    debug_users: 1
+#
+#- name: debug
+#  debug:
+#    msg: "xuid_users : {{ xuid_users }}"
+#  when: debug_users is defined
+#- name: debug
+#  debug:
+#    msg: "xuid_admins : {{ xuid_admins }}"
+#  when: debug_users is defined
+#- name: debug
+#  debug:
+#    msg: "xgid : {{ xgid }}"
+#  when: debug_users is defined
+#
+#- name: halt
+#  assert:
+#    that: false
+#  when: debug_users is defined
+
+- name: create users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    uid: "{{ item.id }}"
+    shell: "{{ item.shell }}"
+    update_password: on_create
+  with_items:
+    - "{{ xuid_users }}"
+
+- name: users groups
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: users
+    append: true
+  with_items:
+    - "{{ xuid_users }}"
+
+- name: users authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', 'conf/authorized_key/{{ item.name }}.pub') }}"
+  with_items:
+    - "{{ xuid_users }}"
+
+##############################################################################
+# We need HOME for login users (including root)
+##############################################################################
+
+- name: Generate user list
+  run_once: true
+  delegate_to: localhost
+  set_fact:
+    # add root, because it is not expected in uid
+    all_users: "{{ xuid_users | map(attribute='name') | list + ['root'] }}"
+
+- name: Get user's info
+  ansible.builtin.user:
+    name: "{{ item }}"
+  with_items:
+    - "{{ all_users }}"
+  register: all_users_info
+
+##############################################################################
+# Overwrite defaults for user who have never login
+##############################################################################
+- name: skel needed?
+  check_mode: false
+  no_log: true
+  ansible.builtin.shell: |
+    if ls -lh {{ item.home }}/.bash_history ; then
+      return 0
+    fi
+    if ls -lh {{ item.home }}/.zsh_history ; then
+      return 0
+    fi
+    return 1
+  with_items:
+    - "{{ all_users_info.results }}"
+  register: skel_needed
+  changed_when: false
+  failed_when: skel_needed.rc != 0 and skel_needed.rc != 1
+
+- name: skel copy
+  no_log: true
+  ansible.builtin.copy:
+    src: conf/files/skel
+    dest: "{{ item.item.home }}/"
+  with_items: "{{ skel_needed.results }}"
+  when:
+    - item.rc == 1
+
+#- name: debug
+#  debug:
+#    msg: "{{ base_config_needed.results }}"
+#
+#- name: stop
+#  assert:
+#    that: false
+#

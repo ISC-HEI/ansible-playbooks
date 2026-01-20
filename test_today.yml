@@ -1,0 +1,23 @@
+- name: Basic check and configuration
+  hosts: "{{ h }}"
+  pre_tasks:
+    - name: Include all files defining users.
+      ansible.builtin.include_vars:
+        dir: conf/users
+  gather_facts: no
+  roles:
+    - 00_setup
+
+- name: Remote
+  hosts: "{{ h }}"
+  become: true
+  gather_facts: no
+  tasks:
+    - name: Set os
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: os-detect
+    - name: today testing
+      ansible.builtin.import_role:
+        name: sw
+        tasks_from: zabbix-agent

@@ -1,0 +1,23 @@
+- name: fastfetch installed?
+  check_mode: false
+  ansible.builtin.shell: which fastfetch
+  register: which_fastfetch
+  changed_when: false
+  failed_when: false
+
+- name: copy fastfetch.deb
+  ansible.builtin.copy:
+    src: conf/files/global/fastfetch-linux-amd64.deb
+    dest: /tmp/fastfetch-linux-amd64.deb
+  when: ansible_facts['architecture'] == "x86_64" and which_fastfetch.rc != 0
+
+- name: install fastfetch
+  ansible.builtin.apt:
+    deb: /tmp/fastfetch-linux-amd64.deb
+    state: present
+  when: ansible_facts['architecture'] == "x86_64" and which_fastfetch.rc != 0
+
+- name: remove fastfetch.deb
+  ansible.builtin.file:
+    path: /tmp/fastfetch-linux-amd64.deb
+    state: absent

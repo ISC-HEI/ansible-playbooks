@@ -1,0 +1,21 @@
+- name: Gather OS and release
+  setup:
+    gather_subset:
+      - 'distribution'
+      - 'lsb'
+      - 'architecture'
+      - '!all'
+      - '!min'
+
+- name: Detect OS
+  check_mode: false
+  set_fact:
+    ub22_04: "{{ ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['lsb']['release'] == '22.04' }}"
+    ub24_04: "{{ ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['lsb']['release'] == '24.04' }}"
+
+- name: OS supported?
+  check_mode: false
+  ansible.builtin.assert:
+    that:
+      - ub24_04 or ub22_04
+    msg: "Only Ubuntu 24.04 and 22.04 are supported"

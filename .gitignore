@@ -1,0 +1,8 @@
+# don't include our configuration
+setup.cfg
+conf/
+ansible.cfg
+
+ArrayFire.sh
+.oh-my-zsh
+

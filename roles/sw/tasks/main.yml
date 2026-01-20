@@ -1,0 +1,19 @@
+- name: Configure zabbix-agent
+  include_tasks: zabbix-agent.yml
+  args:
+    apply:
+      become: yes
+  when: zabbix_server is defined
+
+- name: Configure monit
+  include_tasks: monit.yml
+  args:
+    apply:
+      become: yes
+  when: mailer is defined
+
+- name: Configure pimonlinebot
+  include_tasks: pimonlinebot.yml
+  args:
+    apply:
+      become: yes

@@ -1,0 +1,17 @@
+- name: Basic check and configuration
+  hosts: "{{ h }}"
+  pre_tasks:
+    - name: Include all vars files.
+      ansible.builtin.include_vars:
+        dir: conf/users
+  gather_facts: no
+  roles:
+    - 00_setup
+
+- name: Remote
+  hosts: "{{ h }}"
+  become: true
+  gather_facts: no
+  roles:
+    - common
+    - sw

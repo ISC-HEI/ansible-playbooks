@@ -1,0 +1,36 @@
+- name: Disable+stop unattended upgrade
+  ansible.builtin.systemd_service:
+    name: unattended-upgrades
+    state: stopped
+    enabled: false
+
+- name: Disable+stop fwupd-refresh
+  ansible.builtin.systemd_service:
+    name: fwupd-refresh.timer
+    state: stopped
+    masked: true
+
+- name: Disable+stop fwupd
+  ansible.builtin.systemd_service:
+    name: fwupd
+    state: stopped
+    masked: true
+
+- name: Disable snap refresh
+  check_mode: false
+  ansible.builtin.shell: |
+    if snap refresh --time --abs-time | grep 'hold: forever' ; then
+      return 0
+    else
+      {% if ansible_check_mode %}
+      return 1
+      {% endif %}
+      if snap refresh --hold=forever ; then
+        return 1
+      else
+        return 2
+      fi
+    fi
+  register: retval
+  changed_when: retval.rc == 1
+  failed_when: retval == 2

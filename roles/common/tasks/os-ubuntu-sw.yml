@@ -1,0 +1,39 @@
+- name: Update and upgrade apt packages
+  become: true
+  ansible.builtin.apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: Install common tools
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 86400
+    pkg:
+      - apt-transport-https
+      - gpg
+      - ncdu
+      - htop
+      - iotop
+      - curl
+      - lnav
+      - lm-sensors
+
+- name: ncdu safe options
+  ansible.builtin.copy:
+    dest: /etc/ncdu.conf
+    content: |
+             # make ncdu read-only
+             --disable-delete
+             --disable-shell
+
+- name: iotop enable kernel.task_delayacct
+  ansible.posix.sysctl:
+    name: kernel.task_delayacct
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Install fastfetch
+  include_tasks: os-ubuntu-sw-fastfetch.yml

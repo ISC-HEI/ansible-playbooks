@@ -1,0 +1,3 @@
+- name: Set timezone to Europe/Zurich
+  community.general.timezone:
+    name: Europe/Zurich

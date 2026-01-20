@@ -1,0 +1,24 @@
+- name: var setup
+  set_fact:
+    sw: pimonlinebot
+
+- name: var setup
+  set_fact:
+    config_file: '/etc/{{ sw }}.uuid'
+
+- name: Check if {{ config_file }} exists
+  ansible.builtin.stat:
+    path: "{{ config_file }}"
+  register: e
+
+- name: Create {{config_file}} file
+  ansible.builtin.shell: "uuidgen -r > {{ config_file }}"
+  when: not e.stat.exists
+
+- name: Setup {{ sw }}
+  ansible.builtin.cron:
+    name: "{{ sw }}"
+    minute: "*/5"
+    user: root
+    job: uuid=$(cat {{config_file}}) && /usr/bin/wget -q https://pimonlinebot.pignat.org/index.php?uid=$uuid -O /dev/null
+    cron_file: pimonlinebot

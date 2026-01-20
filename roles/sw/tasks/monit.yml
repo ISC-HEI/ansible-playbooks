@@ -1,0 +1,40 @@
+- name: var setup
+  set_fact:
+    sw: 'monit'
+
+- name: Check variables
+  assert:
+    that:
+      - mailer is not undefined
+      - mailer.server is not undefined
+      - mailer.user is not undefined
+      - mailer.password is not undefined
+      - mailer.dest is not undefined
+
+- name: install {{ sw }}
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 86400
+    pkg:
+      - monit
+
+- name: configure {{ sw }}
+  ansible.builtin.blockinfile:
+    path: /etc/monit/conf.d/01-email-alert.conf
+    block: |2
+      set alert {{ mailer.dest }} on { instance } reminder on 720 cycles
+      set mail-format { from: monit on {{ ansible_hostname }} <{{ mailer.user }}> }
+      set mailserver
+        {{ mailer.server }}
+        port 587
+        username "{{ mailer.user }}" password "{{ mailer.password }}"
+        using ssl
+        using hostname {{ ansible_hostname }}
+    create: true
+  register: service_conf
+
+- name: restart {{ sw }}
+  ansible.builtin.systemd:
+    state: reloaded
+    name: monit
+  when: service_conf.changed

@@ -1,0 +1,49 @@
+- name: Display admins
+  run_once: true
+  delegate_to: localhost
+  debug:
+    msg: "admins: {{ xuid_admins | map(attribute='name') | join(', ') }}"
+
+- name: create sudonopass groups
+  ansible.builtin.group:
+    system: true
+    name: "sudonopass"
+
+- name: create admins
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    uid: "{{ item.id }}"
+    shell: "{{ item.shell }}"
+    update_password: on_create
+  with_items:
+    - "{{ xuid_admins }}"
+
+- name: admin users groups
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: adm,plugdev,users,sudonopass
+    append: true
+  with_items:
+    - "{{ xuid_admins }}"
+
+- name: sudo without password
+  community.general.sudoers:
+    name: admin-nopass
+    group: sudonopass
+    commands: ALL
+
+- name: ubuntu user authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: ubuntu
+    key: "{{ lookup('file', 'conf/authorized_key/{{ item.name }}.pub') }}"
+  with_items:
+    - "{{ xuid_admins }}"
+
+- name: admin users authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', 'conf/authorized_key/{{ item.name }}.pub') }}"
+  with_items:
+    - "{{ xuid_admins }}"

@@ -1,0 +1,102 @@
+- name: var setup
+  set_fact:
+    sw: 'zabbix-agent2'
+    min_version: '1:7.4.0'
+
+- name: Check parameters for {{ sw }}
+  assert:
+    msg: "Required variable 'zabbix_server' has not been provided"
+    that: zabbix_server is not undefined
+
+- name: Gather the package facts for {{ sw }}
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: already installed?
+  set_fact:
+    installed_version: "{{ ansible_facts.packages[sw][0].version | default('0:0.0.0') }}"
+
+- name: ensure supported os for {{ sw }}
+  check_mode: false
+  ansible.builtin.assert:
+    that:
+      - ub24_04 or ub22_04
+    msg: "Only Ubuntu 24.04 and 22.04 are supported"
+
+##############################################################################
+- name: install if necessary
+  when: installed_version is version(min_version, '<=')
+##############################################################################
+  block:
+  - name: choose version for {{ sw }}
+    set_fact:
+      ub_lts: "{{ '24' if ub24_04 else '22'}}"
+
+  - name: install repo for {{ sw }}
+    vars:
+    ansible.builtin.apt:
+      deb: https://repo.zabbix.com/zabbix/7.4/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.4+ubuntu{{ub_lts}}.04_all.deb
+
+  - name: install {{sw}}
+    ansible.builtin.apt:
+      update_cache: yes
+      pkg: "{{sw}}"
+  ##############################################################################
+
+- name: Set configuration for {{ sw }}
+  lineinfile:
+    dest: /etc/zabbix/zabbix_agent2.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  register: service_conf
+  loop:
+    - { state: present, regexp: '(?i)^Server=', line: '#Server=' }
+    - { state: present, regexp: '(?i)^ServerActive=', line: "ServerActive={{ zabbix_server }}" }
+    - { state: present, regexp: '(?i)^Hostname=', line: '#Hostname=' }
+    - { state: present, regexp: '(?i)^Server=', line: '#Server=' }
+    - { state: present, regexp: '(?i)^ListenIP=', line: '#ListenIP=' }
+
+- name: Add sensors modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  register: modules_load
+  ignore_errors: true # assuming no module imply not supported
+  loop:
+    - coretemp
+    - drivetemp
+
+- name: "{{ sw }} sensors.conf"
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/zabbix_agent2.d/sensors.conf
+    regexp: '^UserParameter='
+    line: UserParameter=sensors,/etc/zabbix/scripts/sensors.py
+    create: true
+  register: sensors_conf
+
+- name: "{{ sw }} /etc/zabbix/scripts/"
+  ansible.builtin.file:
+    path: /etc/zabbix/scripts/
+    state: directory
+  register: scripts_dir
+
+- name: "{{ sw }} sensors.py"
+  ansible.builtin.copy:
+    src: files/sensors.py
+    dest: /etc/zabbix/scripts/sensors.py
+    mode: a+x
+  register: sensors_py
+
+- name: Restart {{ sw }}
+  ansible.builtin.systemd:
+    state: restarted
+    name: "{{sw}}"
+  when: service_conf.changed or modules_load.changed or sensors_conf.changed or scripts_dir.changed or sensors_py.changed
+
+- name: Make sure {{ sw }} is it started+enabled
+  ansible.builtin.systemd:
+    enabled: true
+    state: started
+    name: "{{sw}}"

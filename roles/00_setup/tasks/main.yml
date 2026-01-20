@@ -1,0 +1,6 @@
+- name: Check
+  include_tasks: 00_ansible.yml
+
+- name: Setup
+  include_tasks: 01_users.yml
+  
