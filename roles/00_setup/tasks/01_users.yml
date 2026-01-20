@@ -23,7 +23,7 @@
       - duplicate_groupname_length == "0"
     msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, , duplicate_groupname: {{ duplicate_groupname }}"
 
-- name: Safe deaults
+- name: Safe defaults
   set_fact:
     admins: "{{ admins | default() }}"
     users: "{{ users | default() }}"
