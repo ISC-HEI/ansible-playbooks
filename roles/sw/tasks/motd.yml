@@ -1,0 +1,8 @@
+- name: motd
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/01-isc
+    mode: a+x
+    content: |
+             #!/bin/bash
+             echo
+             echo " * ISC Learn:      https://isc.hevs.ch"
