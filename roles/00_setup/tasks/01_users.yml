@@ -11,16 +11,12 @@
     duplicate_gid: "{{ xgid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
     duplicate_username: "{{ xuid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
     duplicate_groupname: "{{ xgid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
-    duplicate_uid_length: "{{ duplicate_uid | length }}"
-    duplicate_gid_length: "{{ duplicate_gid | length }}"
-    duplicate_username_length: "{{ duplicate_username | length }}"
-    duplicate_groupname_length: "{{ duplicate_groupname | length }}"
   assert:
     that:
-      - duplicate_uid_length == "0"
-      - duplicate_gid_length == "0"
-      - duplicate_username_length == "0"
-      - duplicate_groupname_length == "0"
+      - duplicate_uid | length == 0
+      - duplicate_gid | length == 0
+      - duplicate_username | length == 0
+      - duplicate_groupname | length == 0
     msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, , duplicate_groupname: {{ duplicate_groupname }}"
 
 - name: Safe defaults

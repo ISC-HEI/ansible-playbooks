@@ -38,4 +38,5 @@ cat > ansible.cfg << EOF
 [defaults]
 inventory=conf/inventory
 vault_password_file=$VAULT_PASSWORD_FILE
+interpreter_python=auto_silent
 EOF
