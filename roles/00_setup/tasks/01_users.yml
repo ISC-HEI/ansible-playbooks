@@ -4,7 +4,6 @@
     xgid: "{{ lookup('community.general.merge_variables', '^gid_.*' ) }}"
 
 - name: ensure UID/GID and names uniqueness
-  run_once: true
   delegate_to: localhost
   vars:
     duplicate_uid: "{{ xuid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
@@ -18,6 +17,12 @@
       - duplicate_username | length == 0
       - duplicate_groupname | length == 0
     msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, , duplicate_groupname: {{ duplicate_groupname }}"
+
+- name: test
+  delegate_to: localhost
+  assert:
+    that:
+      true
 
 - name: Safe defaults
   set_fact:
