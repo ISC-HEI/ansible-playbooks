@@ -9,8 +9,8 @@ The expected format of the configuration will be documented here, until #1 is fi
 
 1. clone the repository
 1. copy setup.cfg.sample into setup.cfg
-  * CONF_REPO_URL <- URL to be cloned for the configuration
-  * VAULT_PASSWORD_FILE <- PATH to a file containing the vault password
+   * CONF_REPO_URL <- URL to be cloned for the configuration
+   * VAULT_PASSWORD_FILE <- PATH to a file containing the vault password
 1. configure setup.cfg
 1. run ./setup.sh
 
