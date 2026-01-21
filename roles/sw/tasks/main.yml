@@ -19,7 +19,7 @@
       become: yes
 
 - name: Configure motd
-  include_tasks: pimonlinebot.yml
+  include_tasks: motd.yml
   args:
     apply:
       become: yes
