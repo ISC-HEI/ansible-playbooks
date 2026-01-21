@@ -1,8 +1,37 @@
-- name: motd
+- name: motd logo copy
   ansible.builtin.copy:
-    dest: /etc/update-motd.d/01-isc
+    src: "{{ motd_logo }}"
+    dest: /etc/update-motd.d/
+  when: motd_logo is defined
+
+- name: motd logo
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/03-logo
+    mode: a+x
+    content: |
+             #!/bin/bash
+             cat /etc/update-motd.d/isc-logo.ans
+  when: motd_logo is defined
+
+- name: motd str
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/05-str
     mode: a+x
     content: |
              #!/bin/bash
              echo
-             echo " * ISC Learn:      https://isc.hevs.ch"
+             echo {{ motd_str }}
+  when: motd_str is defined
+
+- name: quieter motd
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: a-x
+  loop:
+    - /etc/update-motd.d/10-help-text
+    - /etc/update-motd.d/50-motd-news
+    - /etc/update-motd.d/91-contract-ua-esm-status
+    - /etc/update-motd.d/85-fwupd
+    - /etc/update-motd.d/92-unattended-upgrades
+    - /etc/update-motd.d/90-updates-available
+    - /etc/update-motd.d/91-release-upgrade
