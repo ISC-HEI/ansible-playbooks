@@ -51,10 +51,9 @@
     state: "{{ item.state }}"
   register: service_conf
   loop:
-    - { state: present, regexp: '(?i)^Server=', line: '#Server=' }
+    - { state: present, regexp: '(?i)^Server=', line: "Server={{ zabbix_server }}" }
     - { state: present, regexp: '(?i)^ServerActive=', line: "ServerActive={{ zabbix_server }}" }
     - { state: present, regexp: '(?i)^Hostname=', line: '#Hostname=' }
-    - { state: present, regexp: '(?i)^Server=', line: '#Server=' }
     - { state: present, regexp: '(?i)^ListenIP=', line: '#ListenIP=' }
 
 - name: Add sensors modules
