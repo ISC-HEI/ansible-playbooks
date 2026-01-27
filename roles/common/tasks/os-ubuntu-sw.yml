@@ -1,7 +1,7 @@
-- name: Update and upgrade apt packages
+- name: Update apt packages
   become: true
   ansible.builtin.apt:
-    upgrade: yes
+    upgrade: no
     update_cache: yes
     cache_valid_time: 86400
 
@@ -19,13 +19,22 @@
       - lnav
       - lm-sensors
 
-- name: ncdu safe options
+- name: ncdu safe options for 24.04
   ansible.builtin.copy:
     dest: /etc/ncdu.conf
+    mode: a+r
     content: |
              # make ncdu read-only
              --disable-delete
              --disable-shell
+  when: ub24_04
+
+- name: ncdu safe options for 22.04
+  ansible.builtin.copy:
+    dest: /etc/profile.d/00-ncdu-readonly.sh
+    mode: a+r
+    content: alias ncdu='ncdu -rr'
+  when: ub22_04
 
 - name: iotop enable kernel.task_delayacct
   ansible.posix.sysctl:
