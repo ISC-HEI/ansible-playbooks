@@ -1,5 +1,4 @@
 - name: Update apt packages
-  become: true
   ansible.builtin.apt:
     upgrade: "{{ apt_upgrade | default('no') }}"
     update_cache: yes
@@ -18,6 +17,7 @@
       - curl
       - lnav
       - lm-sensors
+      - zsh
 
 - name: ncdu safe options for 24.04
   ansible.builtin.copy:
@@ -29,11 +29,19 @@
              --disable-shell
   when: ub24_04
 
-- name: ncdu safe options for 22.04
+- name: ncdu safe options for 22.04 using bash
   ansible.builtin.copy:
     dest: /etc/profile.d/00-ncdu-readonly.sh
     mode: a+r
     content: alias ncdu='ncdu -rr'
+  when: ub22_04
+
+- name: ncdu safe options for 22.04 using zsh
+  ansible.builtin.lineinfile:
+    dest: /etc/zsh/zshenv
+    regexp: "(?i)^alias ncdu="
+    line: "alias ncdu='ncdu -rr'"
+    state: present
   when: ub22_04
 
 - name: iotop enable kernel.task_delayacct
