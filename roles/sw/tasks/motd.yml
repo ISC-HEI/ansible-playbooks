@@ -20,7 +20,7 @@
     content: |
              #!/bin/bash
              echo
-             echo {{ motd_str }}
+             echo '{{ motd_str }}'
   when: motd_str is defined
 
 - name: quieter motd
