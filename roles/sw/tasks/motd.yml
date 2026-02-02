@@ -27,6 +27,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     mode: a-x
+    state: touch
   loop:
     - /etc/update-motd.d/10-help-text
     - /etc/update-motd.d/50-motd-news

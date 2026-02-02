@@ -13,6 +13,9 @@
     ub22_04: "{{ ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['lsb']['release'] == '22.04' }}"
     ub24_04: "{{ ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['lsb']['release'] == '24.04' }}"
 
+- name: Detect docker
+  community.docker.current_container_facts:
+
 - name: OS supported?
   check_mode: false
   ansible.builtin.assert:
