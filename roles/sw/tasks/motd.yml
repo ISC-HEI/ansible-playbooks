@@ -23,12 +23,9 @@
              echo '{{ motd_str }}'
   when: motd_str is defined
 
-- name: quieter motd
-  ansible.builtin.file:
-    path: "{{ item }}"
-    mode: a-x
-    state: touch
-  loop:
+- name: motd files
+  set_fact:
+    l:
     - /etc/update-motd.d/10-help-text
     - /etc/update-motd.d/50-motd-news
     - /etc/update-motd.d/91-contract-ua-esm-status
@@ -36,3 +33,16 @@
     - /etc/update-motd.d/92-unattended-upgrades
     - /etc/update-motd.d/90-updates-available
     - /etc/update-motd.d/91-release-upgrade
+
+- name: motd create missing files
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ item }}"
+    force: false
+  loop: "{{ l }}"
+
+- name: quieter motd
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: a-x
+  loop: "{{ l }}"
