@@ -1,20 +1,27 @@
-- name: Disable+stop unattended upgrade
+- name: Disable update/upgrade services
   ansible.builtin.systemd_service:
-    name: unattended-upgrades
+    name: "{{ item }}"
     state: stopped
     enabled: false
-
-- name: Disable+stop fwupd-refresh
-  ansible.builtin.systemd_service:
-    name: fwupd-refresh.timer
-    state: stopped
     masked: true
+  loop:
+    - unattended-upgrades.service
+    - apt-daily-upgrade.service
+    - apt-daily-upgrade.timer
+    - apt-daily.service
+    - apt-daily.timer
+    - apt-news.service
+    - fwupd-offline-update.service
+    - fwupd-refresh.service
+    - fwupd-refresh.timer
+    - fwupd.service
 
-- name: Disable+stop fwupd
-  ansible.builtin.systemd_service:
-    name: fwupd
-    state: stopped
-    masked: true
+- name: Set debconf
+  ansible.builtin.debconf:
+    name: unattended-upgrades
+    question: unattended-upgrades/enable_auto_updates
+    value: false
+    vtype: boolean
 
 - name: Disable snap refresh
   check_mode: false
