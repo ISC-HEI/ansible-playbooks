@@ -29,7 +29,7 @@
       password {{ mailer.password }}
       set_from_header on
       allow_from_override off
-      from_full_name {{ ansible_hostname }}
+      from_full_name {{ ansible_facts['hostname'] }}
       from {{ mailer.user }}
     create: true
 

@@ -18,24 +18,25 @@
       - duplicate_groupname | length == 0
     msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, , duplicate_groupname: {{ duplicate_groupname }}"
 
-- name: test
-  delegate_to: localhost
-  assert:
-    that:
-      true
-
-- name: Safe defaults
+- name: When admins not defined, use the ansible_user as admin
   set_fact:
-    admins: "{{ admins | default() }}"
-    users: "{{ users | default() }}"
-    usergroups: "{{ usergroups | default() }}"
+    undef_admins_var: 'undef_admins'
+    undef_admins: "['{{ lookup('vars','ansible_user') }}']"
+
+- name: Defaults admins, users, usergroups
+  set_fact:
+    admins: "{{ admins | default('undef_admins', true) }}"
+    users: "{{ users | default('undef_admins', true) }}"
+    usergroups: "{{ usergroups | default('undef_admins', true) }}"
     xuid_users: "{{ [] }}"
     xuid_admins: "{{ [] }}"
+
 - name: Get admins and users
   set_fact:
-    admins: "{{ vars[admins] | default([]) }}"
-    users: "{{ vars[users] | default([]) }}"
-    usergroups: "{{ vars[usergroups] | default([]) }}"
+    # dereference variables
+    admins: "{{ lookup('vars', admins) }}"
+    users: "{{ lookup('vars', users) }}"
+    usergroups: "{{ lookup('vars', usergroups) }}"
 
 - name: Generate admin uid
   set_fact:

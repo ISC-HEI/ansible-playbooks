@@ -63,7 +63,7 @@
       when: ansible_facts['services']['rsyslog.service'] is not defined or ansible_facts['services']['rsyslog.service']['status'] != 'enabled'
       ignore_errors: True
     - name: server?
-      when: ansible_hostname == syslog_server
+      when: ansible_facts['hostname'] == syslog_server
       block:
         - name: Confiure remote log
           ansible.builtin.blockinfile:
@@ -85,8 +85,9 @@
             state: restarted
             name: "rsyslog"
           when: service_conf.changed
+
     - name: client?
-      when: ansible_hostname != syslog_server
+      when: ansible_facts['hostname'] != syslog_server
       block:
         - name: Confiure remote log
           ansible.builtin.lineinfile:
