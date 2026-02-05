@@ -1,21 +1,59 @@
+- name: Update service list
+  set_fact:
+    update_timers:
+      - apt-daily-upgrade.timer
+      - apt-daily.timer
+      - fwupd-refresh.timer
+    update_services:
+      - unattended-upgrades.service
+      - apt-daily-upgrade.service
+      - apt-daily.service
+      - apt-news.service
+      - fwupd-offline-update.service
+      - fwupd-refresh.service
+      - fwupd.service
+
+# create empty services for packages not installed, so the playbook will be less
+# verbose
+- name: Create uninstalled services
+  ansible.builtin.copy:
+    force: false
+    dest: /usr/lib/systemd/system/{{item}}
+    content: |
+      [Unit]
+      Description=Service placeholder
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/true
+
+      [Install]
+      WantedBy=multi-user.target
+  loop: "{{ update_services }}"
+
+- name: Create uninstalled timers
+  ansible.builtin.copy:
+    force: false
+    dest: /usr/lib/systemd/system/{{item}}
+    content: |
+      [Unit]
+      Description=Timer placeholder
+
+      [Timer]
+      OnBootSec=1y
+      OnUnitActiveSec=1y
+
+      [Install]
+      WantedBy=timers.target
+  loop: "{{ update_timers }}"
+
 - name: Disable update/upgrade services
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: stopped
     enabled: false
     masked: true
-  ignore_errors: true # some services are not installed in ubuntu minimal
-  loop:
-    - unattended-upgrades.service
-    - apt-daily-upgrade.service
-    - apt-daily-upgrade.timer
-    - apt-daily.service
-    - apt-daily.timer
-    - apt-news.service
-    - fwupd-offline-update.service
-    - fwupd-refresh.service
-    - fwupd-refresh.timer
-    - fwupd.service
+  loop: "{{ update_timers + update_services}}"
 
 - name: Set debconf
   ansible.builtin.debconf:
