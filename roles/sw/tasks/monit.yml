@@ -23,13 +23,13 @@
     path: /etc/monit/conf.d/01-email-alert.conf
     block: |2
       set alert {{ mailer.dest }} on { instance } reminder on 720 cycles
-      set mail-format { from: monit on {{ ansible_hostname }} <{{ mailer.user }}> }
+      set mail-format { from: monit on {{ ansible_facts['hostname'] }} <{{ mailer.user }}> }
       set mailserver
         {{ mailer.server }}
         port 587
         username "{{ mailer.user }}" password "{{ mailer.password }}"
         using ssl
-        using hostname {{ ansible_hostname }}
+        using hostname {{ ansible_facts['hostname'] }}
     create: true
   register: service_conf
 
