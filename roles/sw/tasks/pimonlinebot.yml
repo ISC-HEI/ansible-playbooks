@@ -20,5 +20,5 @@
     name: "{{ sw }}"
     minute: "*/5"
     user: root
-    job: uuid=$(cat {{config_file}}) && /usr/bin/wget -q https://pimonlinebot.pignat.org/index.php?uid=$uuid -O /dev/null
+    job: uuid=$(cat {{config_file}}) && /usr/bin/wget -q https://online.oouu.ch?uid=$uuid -O /dev/null
     cron_file: pimonlinebot
