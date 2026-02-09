@@ -14,6 +14,7 @@ The expected format of the configuration will be documented here, until #1 is fi
    * VAULT_PASSWORD_FILE <- PATH to a file containing the vault password
 1. configure setup.cfg
 1. run ./setup.sh
+1. add ssh host keys, after each inventory change: `ansible-playbook add_ssh_host_keys.yml --extra-vars "h=all"`
 
 ## `conf` in brief
 Here is how we store the configuration:

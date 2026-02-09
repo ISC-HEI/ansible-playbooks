@@ -1,0 +1,11 @@
+- name: setup
+  set_fact:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+
+- name: First contact
+  hosts: all
+  setup:
+    gather_subset:
+      - 'distribution'
+      - '!all'
+      - '!min'
