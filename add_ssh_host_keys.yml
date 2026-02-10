@@ -1,11 +1,15 @@
-- name: setup
-  set_fact:
-    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+- name: Remote
+  hosts: "{{ h }}"
+  become: true
+  gather_facts: no
+  tasks:
+    - name: setup
+      set_fact:
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
 
-- name: First contact
-  hosts: all
-  setup:
-    gather_subset:
-      - 'distribution'
-      - '!all'
-      - '!min'
+    - name: First contact (so we will know the host key)
+      setup:
+        gather_subset:
+          - 'distribution'
+          - '!all'
+          - '!min'
