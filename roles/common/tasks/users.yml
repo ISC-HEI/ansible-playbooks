@@ -1,25 +1,3 @@
-#- name: debug
-#  set_fact:
-#    debug_users: 1
-#
-#- name: debug
-#  debug:
-#    msg: "xuid_users : {{ xuid_users }}"
-#  when: debug_users is defined
-#- name: debug
-#  debug:
-#    msg: "xuid_admins : {{ xuid_admins }}"
-#  when: debug_users is defined
-#- name: debug
-#  debug:
-#    msg: "xgid : {{ xgid }}"
-#  when: debug_users is defined
-#
-#- name: halt
-#  assert:
-#    that: false
-#  when: debug_users is defined
-
 - name: create users
   ansible.builtin.user:
     name: "{{ item.name }}"
@@ -63,40 +41,52 @@
     - "{{ all_users }}"
   register: all_users_info
 
+- name: $HOME list
+  set_fact:
+    homes: "{{ all_users_info.results | map(attribute='home') }}"
+
 ##############################################################################
 # Overwrite defaults for user who have never login
 ##############################################################################
 - name: skel needed?
   check_mode: false
-  no_log: true
   ansible.builtin.shell: |
-    if ls -lh {{ item.home }}/.bash_history ; then
+    if ls -lh {{ item }}/.bash_history ; then
       return 0
     fi
-    if ls -lh {{ item.home }}/.zsh_history ; then
+    if ls -lh {{ item }}/.zsh_history ; then
       return 0
     fi
     return 1
   with_items:
-    - "{{ all_users_info.results }}"
+    - "{{ homes }}"
   register: skel_needed
   changed_when: false
   failed_when: skel_needed.rc != 0 and skel_needed.rc != 1
 
-- name: skel copy
-  no_log: true
-  ansible.builtin.copy:
-    src: conf/files/skel
-    dest: "{{ item.item.home }}/"
-  with_items: "{{ skel_needed.results }}"
-  when:
-    - item.rc == 1
+- name: $HOME list (skel needed)
+  set_fact:
+    skel_homes: "{{ skel_needed.results | selectattr('rc', 'equalto', 1) | map(attribute='item') }}"
 
-#- name: debug
-#  debug:
-#    msg: "{{ base_config_needed.results }}"
-#
-#- name: stop
-#  assert:
-#    that: false
-#
+- name: skel copy
+  ansible.builtin.copy:
+    src: conf/files/skel/
+    dest: "{{ item }}"
+  with_items: "{{ skel_homes }}"
+
+- name: enable bash colors (for tty and sudo)
+  lineinfile:
+    dest: "{{ item }}/.bashrc"
+    regexp: "^#force_color_prompt=yes"
+    line: "force_color_prompt=yes"
+    state: present
+  with_items:
+    - "{{ homes }}"
+
+- name: bash color red for root
+  lineinfile:
+    dest: "/root/.bashrc"
+    regexp: '(    PS1=.*)(\[01;32m\\]\\u)(.*)'
+    line: '\g<1>[01;31m\\]\\u\g<3>'
+    backrefs: yes
+    state: present
