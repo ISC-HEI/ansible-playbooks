@@ -1,57 +1,91 @@
 - name: merge uid/git/user roles
   set_fact:
-    xuid: "{{ lookup('community.general.merge_variables', '^uid_.*' ) }}"
-    xgid: "{{ lookup('community.general.merge_variables', '^gid_.*' ) }}"
+    xyuid: "{{ lookup('community.general.merge_variables', '^uid_.*' ) }}"
+    xygid: "{{ lookup('community.general.merge_variables', '^gid_.*' ) }}"
 
 - name: ensure UID/GID and names uniqueness
   delegate_to: localhost
   vars:
-    duplicate_uid: "{{ xuid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
-    duplicate_gid: "{{ xgid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
-    duplicate_username: "{{ xuid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
-    duplicate_groupname: "{{ xgid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_uid: "{{ xyuid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_gid: "{{ xygid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_username: "{{ xyuid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_groupname: "{{ xygid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
   assert:
     that:
       - duplicate_uid | length == 0
       - duplicate_gid | length == 0
       - duplicate_username | length == 0
       - duplicate_groupname | length == 0
-    msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, , duplicate_groupname: {{ duplicate_groupname }}"
+    msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, duplicate_groupname: {{ duplicate_groupname }}"
 
-- name: When admins not defined, use the ansible_user as admin
+- name: When admin_uids not defined, use the ansible_user as admin
   set_fact:
-    undef_admins_var: 'undef_admins'
-    undef_admins: "['{{ lookup('vars','ansible_user') }}']"
+    undef_admin_uids_var: 'undef_admin_uids'
+    undef_admin_uids: "[[{  id: '1000', name: '{{ lookup('vars','ansible_user') }}', shell: '/bin/bash'    }]]"
+    undef_admin_gids_var: 'undef_admin_gids'
+    undef_admin_gids: "[[{ { id: '141', name: 'testgroup'} }]]"
+
+- name: d1
+  debug:
+    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
 
 - name: Defaults admins, users, usergroups
   set_fact:
-    admins: "{{ admins | default('undef_admins', true) }}"
-    users: "{{ users | default('undef_admins', true) }}"
-    usergroups: "{{ usergroups | default('undef_admins', true) }}"
-    xuid_users: "{{ [] }}"
-    xuid_admins: "{{ [] }}"
+    admin_uids: "{{ admin_uids | default('undef_admin_uids', true) }}"
+    admin_gids: "{{ admin_gids | default('undef_admin_gids', true) }}"
+    uids: "{{ uids | default('undef_admin_uids', true) }}"
+    gids: "{{ gids | default('undef_admin_gids', true) }}"
+
+- name: d2
+  debug:
+    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
 
 - name: Get admins and users
   set_fact:
     # dereference variables
-    admins: "{{ lookup('vars', admins) }}"
-    users: "{{ lookup('vars', users) }}"
-    usergroups: "{{ lookup('vars', usergroups) }}"
+    admin_uids: "{{ lookup('vars', admin_uids) }}"
+    admin_gids: "{{ lookup('vars', admin_gids) }}"
+    uids: "{{ lookup('vars', uids) }}"
+    gids: "{{ lookup('vars', gids) }}"
+    # now admin_uids, uids and gids are list of list of elements
 
-- name: Generate admin uid
-  set_fact:
-    xuid_admins: "{{ xuid_admins | default([]) +  [item] }}"
-  when: item.name in admins
-  loop: "{{ xuid }}"
+- name: d3
+  debug:
+    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
 
-- name: Generate users uid
-  set_fact:
-    xuid_users: "{{ xuid_users | default([]) +  [item] }}"
-  when: item.name in users or item.name in admins
-  loop: "{{ xuid }}"
+- name: Get admins and users
+  block:
+  - set_fact:
+      tmp_admin_uids: "{{ tmp_admin_uids + lookup('vars', item )}}"
+    loop: "{{ admin_uids }}"
+    vars:
+      tmp_admin_uids: []
+  - set_fact:
+      tmp_admin_gids: "{{ tmp_admin_gids + lookup('vars', item )}}"
+    loop: "{{ admin_gids }}"
+    vars:
+      tmp_admin_gids: []
+  - set_fact:
+      tmp_uids: "{{ tmp_uids + lookup('vars', item )}}"
+    loop: "{{ admin_uids + uids  }}"
+    vars:
+      tmp_uids: []
+  - set_fact:
+      tmp_gids: "{{ tmp_gids + lookup('vars', item )}}"
+    loop: "{{ gids }}"
+    vars:
+      tmp_gids: []
+  - set_fact:
+      admin_uids: "{{tmp_admin_uids}}"
+      admin_gids: "{{tmp_admin_gids}}"
+      uids: "{{tmp_uids}}"
+      gids: "{{tmp_gids}}"
 
-- name: Generate users gid
-  set_fact:
-    xgid: "{{ xgid | default([]) +  [item] }}"
-  when: item.name in usergroups
-  loop: "{{ xgid }}"
+- name: d4
+  debug:
+    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
+
+- name: STOP
+  fail:
+  when:
+    false

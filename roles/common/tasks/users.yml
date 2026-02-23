@@ -5,15 +5,20 @@
     shell: "{{ item.shell }}"
     update_password: on_create
   with_items:
-    - "{{ xuid_users }}"
+    - "{{ uids }}"
 
-- name: users groups
+- name: create users groups
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ gids }}"
+
+- name: map users/groups
   ansible.builtin.user:
     name: "{{ item.name }}"
-    groups: users
+    groups: "{{ gids | map(attribute='name') | list + ['users'] }}"
     append: true
-  with_items:
-    - "{{ xuid_users }}"
+  loop: "{{ uids }}"
 
 - name: users authorized_keys
   ansible.posix.authorized_key:
@@ -21,7 +26,7 @@
     user: "{{ item.name }}"
     key: "{{ lookup('file', 'conf/authorized_keys/' ~ item.name ~ '.pub') }}"
   with_items:
-    - "{{ xuid_users }}"
+    - "{{ uids }}"
 
 ##############################################################################
 # We need HOME for login users (including root)
@@ -32,7 +37,7 @@
   delegate_to: localhost
   set_fact:
     # add root, because it is not expected in uid
-    all_users: "{{ xuid_users | map(attribute='name') | list + ['root'] }}"
+    all_users: "{{ uids | map(attribute='name') | list + ['root'] }}"
 
 - name: Get user's info
   ansible.builtin.user:
