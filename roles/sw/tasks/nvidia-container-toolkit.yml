@@ -1,6 +1,6 @@
 - name: docker?
-  command: docker --version
-  register: docker_installed?
+  ansible.builtin.command: docker --version
+  register: docker_installed
   ignore_errors: yes
 
 - name: docker required!
