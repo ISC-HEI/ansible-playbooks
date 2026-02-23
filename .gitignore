@@ -1,6 +1,6 @@
 # don't include our configuration
 setup.cfg
-conf/
+conf*/
 ansible.cfg
 
 ArrayFire.sh
