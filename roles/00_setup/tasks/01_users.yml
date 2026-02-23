@@ -20,25 +20,15 @@
 
 - name: When admin_uids not defined, use the ansible_user as admin
   set_fact:
-    undef_admin_uids_var: 'undef_admin_uids'
     undef_admin_uids: "[[{  id: '1000', name: '{{ lookup('vars','ansible_user') }}', shell: '/bin/bash'    }]]"
-    undef_admin_gids_var: 'undef_admin_gids'
-    undef_admin_gids: "[[{ { id: '141', name: 'testgroup'} }]]"
-
-- name: d1
-  debug:
-    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
+    undef_empty: []
 
 - name: Defaults admins, users, usergroups
   set_fact:
     admin_uids: "{{ admin_uids | default('undef_admin_uids', true) }}"
-    admin_gids: "{{ admin_gids | default('undef_admin_gids', true) }}"
-    uids: "{{ uids | default('undef_admin_uids', true) }}"
-    gids: "{{ gids | default('undef_admin_gids', true) }}"
-
-- name: d2
-  debug:
-    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
+    admin_gids: "{{ admin_gids | default('undef_empty', true) }}"
+    uids: "{{ uids | default('undef_empty', true) }}"
+    gids: "{{ gids | default('undef_empty', true) }}"
 
 - name: Get admins and users
   set_fact:
@@ -48,10 +38,6 @@
     uids: "{{ lookup('vars', uids) }}"
     gids: "{{ lookup('vars', gids) }}"
     # now admin_uids, uids and gids are list of list of elements
-
-- name: d3
-  debug:
-    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
 
 - name: Get admins and users
   block:
@@ -67,7 +53,7 @@
       tmp_admin_gids: []
   - set_fact:
       tmp_uids: "{{ tmp_uids + lookup('vars', item )}}"
-    loop: "{{ admin_uids + uids  }}"
+    loop: "{{ admin_uids + uids }}"
     vars:
       tmp_uids: []
   - set_fact:
@@ -79,7 +65,7 @@
       admin_uids: "{{tmp_admin_uids}}"
       admin_gids: "{{tmp_admin_gids}}"
       uids: "{{tmp_uids}}"
-      gids: "{{tmp_gids}}"
+      gids: "{{tmp_gids|default([])}}"
 
 - name: d4
   debug:
