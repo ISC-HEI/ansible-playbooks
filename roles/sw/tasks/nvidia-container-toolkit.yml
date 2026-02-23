@@ -1,0 +1,42 @@
+- name: docker?
+  command: docker --version
+  register: docker_installed?
+  ignore_errors: yes
+
+- name: docker required!
+  when: docker_installed.rc == 0
+  block:
+    - name: add repo gpg key
+      ansible.builtin.get_url:
+        url: https://nvidia.github.io/libnvidia-container/gpgkey
+        dest: /usr/share/keyrings/nvidia-container-toolkit-keyring.asc
+
+    - name: add repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
+        state: present
+      register: repo
+
+    - name: update cache if repo changed
+      ansible.builtin.apt:
+        update_cache: yes
+      when: repo.changed
+
+    - name: install
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 86400
+        pkg:
+          - nvidia-container-toolkit
+      register: i
+
+    - name: configure
+      ansible.builtin.command: nvidia-ctk runtime configure --runtime=docker
+      when: i.changed
+      register: c
+
+    - name: restart docker
+      ansible.builtin.systemd:
+        state: restarted
+        name: "docker"
+      when: c.changed
