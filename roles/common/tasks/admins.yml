@@ -9,6 +9,10 @@
     system: true
     name: "sudonopass"
 
+- name: admin group names
+  set_fact:
+    admin_group_names: "{{ admin_gids | map(attribute='name') + ['adm','plugdev','users','sudonopass'] }}"
+
 - name: create admins
   ansible.builtin.user:
     name: "{{ item.name }}"
@@ -19,10 +23,16 @@
   with_items:
     - "{{ admin_uids }}"
 
+- name: create admin groups
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ admin_group_names }}"
+
 - name: admin users groups
   ansible.builtin.user:
     name: "{{ item.name }}"
-    groups: "{{ admins_gids | map(attribute='name') | list + ['adm','plugdev','users','sudonopass'] }}"
+    groups: "{{ admin_group_names }}"
     append: true
   with_items:
     - "{{ admin_uids }}"
