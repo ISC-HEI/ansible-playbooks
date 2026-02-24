@@ -10,7 +10,7 @@
 - name: install msmtp
   ansible.builtin.apt:
     update_cache: yes
-    cache_valid_time: 86400
+    cache_valid_time: "{{ cache_valid_time | default(86400) }}"
     pkg:
       - msmtp
       - msmtp-mta

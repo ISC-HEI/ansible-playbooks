@@ -2,12 +2,12 @@
   ansible.builtin.apt:
     upgrade: "{{ apt_upgrade | default('no') }}"
     update_cache: yes
-    cache_valid_time: 86400
+    cache_valid_time: "{{ cache_valid_time | default(86400) }}"
 
 - name: Install common tools
   ansible.builtin.apt:
     update_cache: yes
-    cache_valid_time: 86400
+    cache_valid_time: "{{ cache_valid_time | default(86400) }}"
     pkg:
       - apt-transport-https
       - gpg

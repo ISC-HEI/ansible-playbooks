@@ -29,7 +29,7 @@
     - name: install
       ansible.builtin.apt:
         update_cache: yes
-        cache_valid_time: 86400
+        cache_valid_time: "{{ cache_valid_time | default(86400) }}"
         pkg:
           - nvidia-container-toolkit
       register: i
