@@ -13,6 +13,7 @@
   ansible.builtin.user:
     name: "{{ item.name }}"
     uid: "{{ item.id }}"
+    comment: "{{ item.email | default(omit) }}"
     shell: "{{ item.shell }}"
     update_password: on_create
   with_items:

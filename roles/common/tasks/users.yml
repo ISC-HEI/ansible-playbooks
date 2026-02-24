@@ -2,6 +2,7 @@
   ansible.builtin.user:
     name: "{{ item.name }}"
     uid: "{{ item.id }}"
+    comment: "{{ item.email | default(omit) }}"
     shell: "{{ item.shell }}"
     update_password: on_create
   with_items:
@@ -16,7 +17,6 @@
 - name: map users/groups
   ansible.builtin.user:
     name: "{{ item.name }}"
-    comment: "{{ item.email | default(omit) }}"
     groups: "{{ gids | map(attribute='name') | list + ['users'] }}"
     append: true
   loop: "{{ uids }}"
