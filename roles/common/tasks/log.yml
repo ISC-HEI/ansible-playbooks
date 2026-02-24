@@ -53,10 +53,6 @@
   block:
     - name: Gather service facts
       service_facts:
-    - name: d
-      debug:
-        msg: "ansible_facts['services']['rsyslog.service'] {{ ansible_facts['services']['rsyslog.service'] }}"
-
     - name: Warn if not rsyslog
       fail:
         msg: "Only rsyslog is supported"
