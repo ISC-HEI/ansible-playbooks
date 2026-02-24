@@ -16,6 +16,7 @@
 - name: map users/groups
   ansible.builtin.user:
     name: "{{ item.name }}"
+    comment: "{{ item.email | default(omit) }}"
     groups: "{{ gids | map(attribute='name') | list + ['users'] }}"
     append: true
   loop: "{{ uids }}"
