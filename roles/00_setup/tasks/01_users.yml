@@ -66,12 +66,3 @@
       admin_gids: "{{tmp_admin_gids}}"
       uids: "{{tmp_uids}}"
       gids: "{{tmp_gids|default([])}}"
-
-- name: d4
-  debug:
-    msg: "admin_uids : {{ admin_uids }} uids : {{ uids }} gids : {{ gids }}"
-
-- name: STOP
-  fail:
-  when:
-    false
