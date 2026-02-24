@@ -39,29 +39,43 @@
     gids: "{{ lookup('vars', gids) }}"
     # now admin_uids, uids and gids are list of list of elements
 
+- name: ensure [admin_,][u,]ids exists
+  assert:
+    quiet: yes
+    that:
+      - item is defined
+      - lookup('vars', item, default = '') != ''
+    msg: "variable {{ item }} is undefined or empty (but used in admin_uids, admins_gids, uids or gids)"
+  loop: "{{ admin_uids + admin_gids + uids + gids}}"
+
 - name: Get admins and users
   block:
-  - set_fact:
+  - name: admin_uids
+    set_fact:
       tmp_admin_uids: "{{ tmp_admin_uids + lookup('vars', item )}}"
     loop: "{{ admin_uids }}"
     vars:
       tmp_admin_uids: []
-  - set_fact:
+  - name: admin_gids
+    set_fact:
       tmp_admin_gids: "{{ tmp_admin_gids + lookup('vars', item )}}"
     loop: "{{ admin_gids }}"
     vars:
       tmp_admin_gids: []
-  - set_fact:
+  - name: uids
+    set_fact:
       tmp_uids: "{{ tmp_uids + lookup('vars', item )}}"
     loop: "{{ admin_uids + uids }}"
     vars:
       tmp_uids: []
-  - set_fact:
+  - name: gids
+    set_fact:
       tmp_gids: "{{ tmp_gids + lookup('vars', item )}}"
     loop: "{{ gids }}"
     vars:
       tmp_gids: []
-  - set_fact:
+  - name: cleanup
+    set_fact:
       admin_uids: "{{tmp_admin_uids}}"
       admin_gids: "{{tmp_admin_gids}}"
       uids: "{{tmp_uids}}"
