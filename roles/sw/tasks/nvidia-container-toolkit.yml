@@ -14,12 +14,16 @@
     - name: add repo
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
-        state: present
+        state: absent
+
+    - name: add repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
+        filename: nvidia-container-toolkit
       register: repo
 
-    - name: update cache if repo changed
-      ansible.builtin.apt:
-        update_cache: yes
+    - name: update repo
+      ansible.builtin.command: apt-get update -o Dir::Etc::sourcelist="sources.list.d/nvidia-container-toolkit.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
       when: repo.changed
 
     - name: install
