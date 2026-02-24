@@ -22,7 +22,7 @@
 - name: admin users groups
   ansible.builtin.user:
     name: "{{ item.name }}"
-    groups: "{{ admins_gids | map(attribute='name') | list + ['adm','plugdev','users',sudonopass'] }}"
+    groups: "{{ admins_gids | map(attribute='name') | list + ['adm','plugdev','users','sudonopass'] }}"
     append: true
   with_items:
     - "{{ admin_uids }}"
