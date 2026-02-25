@@ -1,5 +1,5 @@
 - name: Remote
-  hosts: "{{ h }}"
+  hosts: "{{ h | default('all') }}"
   become: true
   gather_facts: no
   tasks:

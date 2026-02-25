@@ -47,7 +47,7 @@
   ansible.posix.authorized_key:
     manage_dir: true
     user: ubuntu
-    key: "{{ lookup('file', 'conf/authorized_keys/' ~ item.name ~ '.pub') }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item.name ~ '.pub') }}"
   with_items:
     - "{{ admin_uids }}"
 
@@ -55,6 +55,6 @@
   ansible.posix.authorized_key:
     manage_dir: true
     user: "{{ item.name }}"
-    key: "{{ lookup('file', 'conf/authorized_keys/' ~ item.name ~ '.pub') }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item.name ~ '.pub') }}"
   with_items:
     - "{{ admin_uids }}"

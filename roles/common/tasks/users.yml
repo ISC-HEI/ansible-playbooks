@@ -25,7 +25,8 @@
   ansible.posix.authorized_key:
     manage_dir: true
     user: "{{ item.name }}"
-    key: "{{ lookup('file', 'conf/authorized_keys/' ~ item.name ~ '.pub') }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item.name ~ '.pub') }}"
+
   with_items:
     - "{{ uids }}"
 
@@ -76,7 +77,7 @@
 
 - name: skel copy
   ansible.builtin.copy:
-    src: conf/files/skel/
+    src: "{{ conf_dir ~ '/files/skel/' }}" 
     dest: "{{ item }}"
   with_items: "{{ skel_homes }}"
 

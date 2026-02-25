@@ -1,14 +1,10 @@
-- name: Basic check and configuration
-  hosts: "{{ h }}"
-  pre_tasks:
-    - name: Include all vars files.
-      ansible.builtin.include_vars:
-        dir: conf/users
+- name: Setup - basic checks and configuration # Mandatory first step before running ISC-HEI/ansible-playbooks
+  hosts: "{{ h | default('all') }}"
   gather_facts: no
   roles:
     - 00_setup
 
-- name: Remote
+- name: Execution
   hosts: "{{ h }}"
   become: true
   gather_facts: no

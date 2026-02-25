@@ -1,3 +1,7 @@
+- name: Load users
+  ansible.builtin.include_vars:
+    dir: "{{ conf_dir ~ '/users' }}"
+
 - name: merge uid/git/user roles
   set_fact:
     xyuid: "{{ lookup('community.general.merge_variables', '^uid_.*' ) }}"
