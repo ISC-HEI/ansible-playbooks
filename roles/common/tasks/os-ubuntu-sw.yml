@@ -19,6 +19,8 @@
       - lnav
       - lm-sensors
       - zsh
+      - stress
+      - stress-ng
 
 - name: ncdu safe options for 24.04
   ansible.builtin.copy:

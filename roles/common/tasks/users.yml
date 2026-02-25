@@ -50,18 +50,19 @@
 
 - name: $HOME list
   set_fact:
-    homes: "{{ all_users_info.results | map(attribute='home') }}"
+    homes: "{{ all_users_info.results }}"
 
 ##############################################################################
 # Overwrite defaults for user who have never login
 ##############################################################################
 - name: skel needed?
   check_mode: false
+  no_log: true
   ansible.builtin.shell: |
-    if ls -lh {{ item }}/.bash_history ; then
+    if ls -lh {{ item.home }}/.bash_history ; then
       return 0
     fi
-    if ls -lh {{ item }}/.zsh_history ; then
+    if ls -lh {{ item.home }}/.zsh_history ; then
       return 0
     fi
     return 1
@@ -73,17 +74,21 @@
 
 - name: $HOME list (skel needed)
   set_fact:
-    skel_homes: "{{ skel_needed.results | selectattr('rc', 'equalto', 1) | map(attribute='item') }}"
+    skel_homes: "{{ skel_needed.results | selectattr('rc', 'equalto', 1) }}"
 
 - name: skel copy
+  no_log: true
   ansible.builtin.copy:
-    src: "{{ conf_dir ~ '/files/skel/' }}" 
-    dest: "{{ item }}"
-  with_items: "{{ skel_homes }}"
+    owner: "{{ item.item.uid }}"
+    group: "{{ item.item.group }}"
+    src: "{{ conf_dir ~ '/files/skel/' }}"
+    dest: "{{ item.item.home }}"
+  with_items: "{{ skel_needed.results }}"
 
 - name: enable bash colors (for tty and sudo)
+  no_log: true
   lineinfile:
-    dest: "{{ item }}/.bashrc"
+    dest: "{{ item.home }}/.bashrc"
     regexp: "^#force_color_prompt=yes"
     line: "force_color_prompt=yes"
     state: present
