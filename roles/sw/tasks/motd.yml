@@ -1,7 +1,7 @@
 - name: motd logo copy
   ansible.builtin.copy:
     src: "{{ conf_dir ~ '/' ~ motd_logo }}"
-    dest: /etc/update-motd.d/
+    dest: /etc/update-motd.d/motd_logo.ans
   when: motd_logo is defined
 
 - name: motd logo
@@ -10,7 +10,7 @@
     mode: a+x
     content: |
              #!/bin/bash
-             cat /etc/update-motd.d/isc-logo.ans
+             cat /etc/update-motd.d/motd_logo.ans
   when: motd_logo is defined
 
 - name: motd str
