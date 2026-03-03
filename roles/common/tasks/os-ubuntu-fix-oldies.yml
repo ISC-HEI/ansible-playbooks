@@ -1,0 +1,24 @@
+- name: files with wrong permissions
+  no_log: true
+  set_fact:
+    l:
+    - /etc/apt/sources.list.d/ubuntu.sources
+    - /etc/apt/sources.list.d/ppa_apptainer_ppa_jammy.sources
+    - /etc/apt/sources.list.d/apptainer-ubuntu-ppa-jammy.sources
+    - /etc/apt/sources.list.d/ansible-ubuntu-ansible-jammy.sources
+    - /etc/apt/sources.list
+
+- name: file exists?
+  no_log: true
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: e
+  loop: "{{ l }}"
+
+- name: fix it
+  no_log: true
+  ansible.builtin.file:
+    path: "{{ item.stat.path }}"
+    mode: a+r
+  when: item.stat.isreg is defined and item.stat.isreg
+  loop: "{{ e.results }}"
