@@ -34,15 +34,17 @@
     - /etc/update-motd.d/90-updates-available
     - /etc/update-motd.d/91-release-upgrade
 
-- name: motd create missing files
-  ansible.builtin.copy:
-    content: ""
-    dest: "{{ item }}"
-    force: false
+- name: file exists?
+  no_log: true
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: e
   loop: "{{ l }}"
 
-- name: quieter motd
+- name: fix it
+  no_log: true
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.stat.path }}"
     mode: a-x
-  loop: "{{ l }}"
+  when: item.stat.isreg is defined and item.stat.isreg
+  loop: "{{ e.results }}"
