@@ -1,45 +1,31 @@
-- name: create users
-  ansible.builtin.user:
-    name: "{{ item.name }}"
-    uid: "{{ item.id }}"
-    comment: "{{ item.email | default(omit) }}"
-    shell: "{{ item.shell }}"
-    update_password: on_create
-  with_items:
-    - "{{ uids }}"
-
-- name: create users groups
-  ansible.builtin.group:
-    name: "{{ item.name }}"
-    state: present
-  loop: "{{ gids }}"
-
-- name: map users/groups
-  ansible.builtin.user:
-    name: "{{ item.name }}"
-    groups: "{{ gids | map(attribute='name') | list + ['users'] }}"
-    append: true
-  loop: "{{ uids }}"
-
-- name: users authorized_keys
-  ansible.posix.authorized_key:
-    manage_dir: true
-    user: "{{ item.name }}"
-    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item.name ~ '.pub') }}"
-
-  with_items:
-    - "{{ uids }}"
+- name: Create users+groups
+  include_tasks: _nested_user_group_create.yml
+  vars:
+    u: "{{ item_users }}"
+    sup_gids:
+      - id: 100
+        name: 'users'
+  with_items: "{{ users }}"
+  loop_control:
+    loop_var: item_users
 
 ##############################################################################
 # We need HOME for login users (including root)
 ##############################################################################
 
-- name: Generate user list
-  run_once: true
-  delegate_to: localhost
-  set_fact:
-    # add root, because it is not expected in uid
-    all_users: "{{ uids | map(attribute='name') | list + ['root'] }}"
+- name: Create users list
+  include_tasks: _nested_user_list.yml
+  vars:
+    u: "{{ item_users }}"
+  with_items: "{{ admins + users }}"
+  loop_control:
+    loop_var: item_users
+
+- debug:
+    msg: here
+
+- set_fact:
+    all_users: "{{ u | flatten | unique(attribute='name') | map(attribute='name') + ['root'] }}"
 
 - name: Get user's info
   ansible.builtin.user:

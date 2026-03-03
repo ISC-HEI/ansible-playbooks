@@ -1,0 +1,17 @@
+- name: create users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    uid: "{{ item.id }}"
+    comment: "{{ item.email | default(omit) }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    update_password: on_create
+  with_items:
+    - "{{ u }}"
+
+- name: users authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: "{{ item }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item ~ '.pub') }}"
+  with_items:
+    - "{{ u | map(attribute='name') }}"
