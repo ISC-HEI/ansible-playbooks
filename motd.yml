@@ -5,7 +5,7 @@
     - 00_setup
 
 - name: Execution
-  hosts: "{{ h }}"
+  hosts: "{{ h | default('all') }}"
   become: true
   gather_facts: no
   tasks:
