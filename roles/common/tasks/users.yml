@@ -21,9 +21,6 @@
   loop_control:
     loop_var: item_users
 
-- debug:
-    msg: here
-
 - set_fact:
     all_users: "{{ u | flatten | unique(attribute='name') | map(attribute='name') + ['root'] }}"
 

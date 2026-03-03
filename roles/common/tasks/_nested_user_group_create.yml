@@ -6,11 +6,6 @@
     l_gids: "{{ l_gids | default([]) + [lookup('vars', item)] }}"
   loop: "{{ lookup('vars', u.gids) }}"
 
-- debug:
-    var: l_uids
-- debug:
-    var: l_gids
-
 - include_tasks: _nested_user_group_create_sub_g.yml
   vars:
     g: "{{ it }}"

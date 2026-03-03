@@ -9,9 +9,6 @@
 - set_fact:
     u: "{{ u | flatten | map(attribute='name') | unique }}"
 
-- debug:
-    msg: "Admins = {{ u | join(', ')}}"
-
 - name: ansible_user check
   ansible.builtin.fail:
     msg: "ansible_user must be root or included in admins, ansible_user:{{ ansible_user }}, admins: {{ u | join(', ')}}"
