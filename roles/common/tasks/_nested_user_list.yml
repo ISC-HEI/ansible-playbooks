@@ -1,0 +1,7 @@
+- set_fact:
+    l_uids: "{{ l_uids | default([]) + [lookup('vars', item0)] }}"
+  loop: "{{ lookup('vars', u.uids) }}"
+  loop_control:
+    loop_var: item0
+- set_fact:
+    u: "{{ l_uids }}"

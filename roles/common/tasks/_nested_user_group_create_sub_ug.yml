@@ -1,0 +1,14 @@
+- name: map users/groups
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "{{ g | map(attribute='name') }}"
+    append: true
+  loop: "{{ u | map(attribute='name') }}"
+
+- name: users authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: "{{ item }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item ~ '.pub') }}"
+  with_items:
+    - "{{ u | map(attribute='name') }}"

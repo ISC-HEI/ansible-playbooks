@@ -1,9 +1,23 @@
+- name: Create admins list
+  include_tasks: _nested_user_list.yml
+  vars:
+    u: "{{ item_users }}"
+  with_items: "{{ admins }}"
+  loop_control:
+    loop_var: item_users
+
+- set_fact:
+    u: "{{ u | flatten | map(attribute='name') | unique }}"
+
+- debug:
+    msg: "Admins = {{ u | join(', ')}}"
+
 - name: ansible_user check
   ansible.builtin.fail:
-    msg: "ansible_user must be root or included in admins, ansible_user:{{ ansible_user }}, admins: {{ admin_uids | map(attribute='name') }}"
+    msg: "ansible_user must be root or included in admins, ansible_user:{{ ansible_user }}, admins: {{ u | join(', ')}}"
   when:
     - ansible_user != "root"
-    - admin_uids | map(attribute='name') is not contains(ansible_user)
+    - u is not contains(ansible_user)
 
 - name: Check sudo root
   become: true
