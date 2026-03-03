@@ -37,6 +37,20 @@
   with_items:
     - "{{ admin_uids }}"
 
+- name: map users and groups
+  set_fact:
+    admins_products: "{{ admins_products | default([]) + item }}"
+  loop: "{{ admins }}"
+
+- name: d
+  debug:
+    vars: admins_products
+
+- name: STOP
+  fail:
+  when: true
+
+
 - name: sudo without password
   community.general.sudoers:
     name: admin-nopass

@@ -11,6 +11,13 @@
       become: yes
   when: ub24_04 or ub22_04
 
+- name: Fix old wrong scripts
+  include_tasks: os-ubuntu-fix-oldies.yml
+  args:
+    apply:
+      become: yes
+  when: ub24_04 or ub22_04
+
 - name: Configure timezone
   include_tasks: tz.yml
   args:
