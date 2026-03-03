@@ -1,6 +1,7 @@
 - name: docker?
   ansible.builtin.command: docker --version
   register: docker_installed
+  changed_when: false
   ignore_errors: yes
 
 - name: docker required!
@@ -20,6 +21,7 @@
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
         filename: nvidia-container-toolkit
+        update_cache: false
       register: repo
 
     - name: update repo
