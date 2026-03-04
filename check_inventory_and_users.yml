@@ -1,0 +1,5 @@
+- name: Setup - basic checks and configuration # Mandatory first step before running ISC-HEI/ansible-playbooks
+  hosts: "{{ h | default('all') }}"
+  gather_facts: no
+  roles:
+    - 00_setup
