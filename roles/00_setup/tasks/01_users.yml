@@ -83,11 +83,6 @@
       - duplicate_groupname | length == 0
     msg: "'id' and 'name' fields in users and groups (uid_ and gid_ in '$conf_dir/users') MUST be unique. There are duplicate(s) in : duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, duplicate_groupname: {{ duplicate_groupname }}"
 
-- debug:
-    var: all_uids_l2
-- fail:
-  when: true
-
 - name: ensure groups used in '[admins,users].[u,g]ids' exists
   assert:
     quiet: yes
