@@ -4,6 +4,7 @@
     uid: "{{ item.id | default(omit) }}"
     comment: "{{ item.email | default(omit) }}"
     shell: "{{ item.shell | default('/bin/bash') }}"
+    system: "{{ item.system | default(omit) }}"
     update_password: on_create
   with_items:
     - "{{ u }}"
