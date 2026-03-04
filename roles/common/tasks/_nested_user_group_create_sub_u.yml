@@ -1,7 +1,7 @@
 - name: create users
   ansible.builtin.user:
     name: "{{ item.name }}"
-    uid: "{{ item.id }}"
+    uid: "{{ item.id | default(omit) }}"
     comment: "{{ item.email | default(omit) }}"
     shell: "{{ item.shell | default('/bin/bash') }}"
     update_password: on_create
