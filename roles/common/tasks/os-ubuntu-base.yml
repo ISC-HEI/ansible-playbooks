@@ -1,9 +1,10 @@
-- name: Update service list
+- name: To be disabled
   set_fact:
     update_timers:
       - apt-daily-upgrade.timer
       - apt-daily.timer
       - fwupd-refresh.timer
+      - motd-news.timer
     update_services:
       - unattended-upgrades.service
       - apt-daily-upgrade.service
@@ -12,6 +13,8 @@
       - fwupd-offline-update.service
       - fwupd-refresh.service
       - fwupd.service
+      - motd-news.service
+      - ModemManager.service
 
 # create empty services for packages not installed, so the playbook will be less
 # verbose
