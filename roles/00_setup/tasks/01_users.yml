@@ -83,53 +83,45 @@
       - duplicate_groupname | length == 0
     msg: "'id' and 'name' fields in users and groups (uid_ and gid_ in '$conf_dir/users') MUST be unique. There are duplicate(s) in : duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, duplicate_groupname: {{ duplicate_groupname }}"
 
-- name: ensure groups used in '[admins,users].[u,g]ids' exists
-  assert:
-    quiet: yes
-    that:
-      - item is defined
-      - lookup('vars', item, default = '') | length > 0
-    msg: "variable {{ item }} is undefined or empty (but used in admins.uids, admins.gids, users.uids or users.gids)"
-  loop: "{{ admin_uids + admin_gids + uids + gids}}"
-
-- name: Get admins and users
-  block:
-  - name: admin_uids
-    set_fact:
-      tmp_admin_uids: "{{ tmp_admin_uids + lookup('vars', item )}}"
-    loop: "{{ admins | map(attribute = 'uids') }}"
-    vars:
-      tmp_admin_uids: []
-  - name: admin_gids
-    set_fact:
-      tmp_admin_gids: "{{ tmp_admin_gids + lookup('vars', item )}}"
-    loop: "{{ admins | map(attribute = 'gids') }}"
-    vars:
-      tmp_admin_gids: []
-  - name: uids
-    set_fact:
-      tmp_uids: "{{ tmp_uids + lookup('vars', item )}}"
-    loop: "{{ admins | map(attribute = 'uids') + users | map(attribute = 'uids') }}"
-    vars:
-      tmp_uids: []
-  - name: gids
-    set_fact:
-      tmp_gids: "{{ tmp_gids + lookup('vars', item )}}"
-    loop: "{{ users | map(attribute = 'gids') }}"
-    vars:
-      tmp_gids: []
-  - name: cleanup
-    set_fact:
-      admin_uids: "{{tmp_admin_uids}}"
-      admin_gids: "{{tmp_admin_gids}}"
-      uids: "{{tmp_uids}}"
-      gids: "{{tmp_gids|default([])}}"
-
-- name: ensure groups used in '[admins,users].[u,g]ids' exists
-  assert:
-    quiet: yes
-    that:
-      - item is defined
-      - lookup('vars', item, default = '') | length > 0
-    msg: "variable {{ item }} is undefined or empty (but used in admins.uids, admins.gids, users.uids or users.gids)"
-  loop: "{{ admin_uids + admin_gids + uids + gids}}"
+#- name: Get admins and users
+#  block:
+#  - name: admin_uids
+#    set_fact:
+#      tmp_admin_uids: "{{ tmp_admin_uids + lookup('vars', item )}}"
+#    loop: "{{ admins | map(attribute = 'uids') }}"
+#    vars:
+#      tmp_admin_uids: []
+#  - name: admin_gids
+#    set_fact:
+#      tmp_admin_gids: "{{ tmp_admin_gids + lookup('vars', item )}}"
+#    loop: "{{ admins | map(attribute = 'gids') }}"
+#    vars:
+#      tmp_admin_gids: []
+#  - name: uids
+#    set_fact:
+#      tmp_uids: "{{ tmp_uids + lookup('vars', item )}}"
+#    loop: "{{ admins | map(attribute = 'uids') + users | map(attribute = 'uids') }}"
+#    vars:
+#      tmp_uids: []
+#  - name: gids
+#    set_fact:
+#      tmp_gids: "{{ tmp_gids + lookup('vars', item )}}"
+#    loop: "{{ users | map(attribute = 'gids') }}"
+#    vars:
+#      tmp_gids: []
+#  - name: cleanup
+#    set_fact:
+#      admin_uids: "{{tmp_admin_uids}}"
+#      admin_gids: "{{tmp_admin_gids}}"
+#      uids: "{{tmp_uids}}"
+#      gids: "{{tmp_gids|default([])}}"
+#
+#- name: ensure groups used in '[admins,users].[u,g]ids' exists
+#  assert:
+#    quiet: yes
+#    that:
+#      - item is defined
+#      - lookup('vars', item, default = '') | length > 0
+#    msg: "variable {{ item }} is undefined or empty (but used in admins.uids, admins.gids, users.uids or users.gids)"
+#  loop: "{{ admin_uids + admin_gids + uids + gids}}"
+#
