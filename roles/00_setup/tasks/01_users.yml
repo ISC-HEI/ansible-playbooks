@@ -2,6 +2,28 @@
   ansible.builtin.include_vars:
     dir: "{{ conf_dir ~ '/users' }}"
 
+# merge all uid_* variables and gid_* variables then check for uniqueness
+# FIXME : cleanup
+- name: merge uid/git/user roles
+  set_fact:
+    xyuid: "{{ lookup('community.general.merge_variables', '^uid_.*' ) }}"
+    xygid: "{{ lookup('community.general.merge_variables', '^gid_.*' ) }}"
+
+- name: ensure UID/GID and names uniqueness
+  delegate_to: localhost
+  vars:
+    duplicate_uid: "{{ xyuid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_gid: "{{ xygid | map(attribute='id') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_username: "{{ xyuid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+    duplicate_groupname: "{{ xygid | map(attribute='name') | community.general.counter | dict2items | selectattr('value', '>', 1) | map(attribute='key') }}"
+  assert:
+    that:
+      - duplicate_uid | length == 0
+      - duplicate_gid | length == 0
+      - duplicate_username | length == 0
+      - duplicate_groupname | length == 0
+    msg: "duplicate_uid: {{ duplicate_uid }}, duplicate_gid: {{ duplicate_gid }}, duplicate_username: {{ duplicate_username }}, duplicate_groupname: {{ duplicate_groupname }}"
+
 - name: When admin.uids not defined, use the ansible_user as admin
   set_fact:
     undef_admins_uid:
