@@ -1,22 +1,3 @@
-- name: create users
-  ansible.builtin.user:
-    name: "{{ item.name }}"
-    uid: "{{ item.id | default(omit) }}"
-    comment: "{{ item.email | default(omit) }}"
-    shell: "{{ item.shell | default('/bin/bash') }}"
-    system: "{{ item.system | default(omit) }}"
-    update_password: on_create
-  with_items:
-    - "{{ u }}"
-
-- name: users authorized_key
-  ansible.posix.authorized_key:
-    manage_dir: true
-    user: "{{ item }}"
-    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/' ~ item ~ '.pub') }}"
-  with_items:
-    - "{{ u | map(attribute='name') }}"
-
 - name: Allow mounting cifs shares
   ansible.builtin.lineinfile:
     path: "/etc/sudoers.d/{{ item | regex_replace('\\.','') }}"

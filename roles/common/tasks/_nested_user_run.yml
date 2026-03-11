@@ -1,0 +1,10 @@
+- set_fact:
+    l_uids: "{{ l_uids | default([]) + [lookup('vars', item)] }}"
+  loop: "{{ lookup('vars', u.uids) }}"
+
+- include_tasks: _nested_user_run_sub_sudo_cifs.yml
+  vars:
+    u: "{{ it }}"
+  loop: "{{ l_uids }}"
+  loop_control:
+    loop_var: it
