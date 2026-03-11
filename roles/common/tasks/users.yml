@@ -70,6 +70,7 @@
 
 - name: enable bash colors (for tty and sudo)
   no_log: true
+  ignore_errors: true
   lineinfile:
     dest: "{{ item.home }}/.bashrc"
     regexp: "^#force_color_prompt=yes"
@@ -79,6 +80,7 @@
     - "{{ homes }}"
 
 - name: bash color red for root
+  ignore_errors: true
   lineinfile:
     dest: "/root/.bashrc"
     regexp: '(    PS1=.*)(\[01;32m\\]\\u)(.*)'
