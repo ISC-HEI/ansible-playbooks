@@ -63,6 +63,15 @@
     msg: "variable '{{ item }}' is undefined or empty but used in users or inventory"
   loop: "{{ all_uids + all_gids }}"
 
+- name: ensure admin,users]_uid != [admin,users]_gid
+  assert:
+    that:
+      - admins_uids != admins_gids
+      - admins_uids != users_gids
+      # manage users == []
+      - not (users_uids | length > 0) or users_uids != users_gids
+      - not (users_uids | length > 0) or users_uids != admins_gids
+
 - name: dereference all_uids into _l1
   set_fact:
     all_uids_l1: "{{ all_uids_l1 | default([]) + [ lookup('vars', item) ] | flatten }}"
