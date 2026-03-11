@@ -21,6 +21,7 @@
       - zsh
       - stress
       - stress-ng
+      - cifs-utils
 
 - name: ncdu safe options for 24.04
   ansible.builtin.copy:
