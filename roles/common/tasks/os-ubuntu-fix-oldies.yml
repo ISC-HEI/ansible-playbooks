@@ -22,3 +22,9 @@
     mode: a+r
   when: item.stat.isreg is defined and item.stat.isreg
   loop: "{{ e.results }}"
+
+# current apptainer comes from the same source as docker-ce
+- name:
+  ansible.builtin.file:
+    path: '/etc/apt/sources.list.d/ppa_apptainer_ppa_noble.list'
+    state: absent
