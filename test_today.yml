@@ -15,5 +15,5 @@
         tasks_from: os-detect
     - name: today testing
       ansible.builtin.import_role:
-        name: sw
-        tasks_from: motd
+        name: common
+        tasks_from: users
