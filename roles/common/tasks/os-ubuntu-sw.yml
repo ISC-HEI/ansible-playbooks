@@ -22,6 +22,7 @@
       - stress
       - stress-ng
       - cifs-utils
+      - jq
 
 - name: ncdu safe options for 24.04
   ansible.builtin.copy:
