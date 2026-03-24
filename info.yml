@@ -13,7 +13,7 @@
       ansible.builtin.import_role:
         name: common
         tasks_from: os-detect
-    - name: motd
+    - name: info
       ansible.builtin.import_role:
-        name: sw
-        tasks_from: motd
+        name: common
+        tasks_from: info

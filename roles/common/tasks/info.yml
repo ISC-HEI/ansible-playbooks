@@ -1,0 +1,18 @@
+- name: diagnostics
+  ansible.builtin.command: "{{ item }}"
+  register: out
+  with_items:
+    - dmidecode system-manufacturer
+    - dmidecode system-product-name
+    - dmidecode system-serial-number
+    - bash -c "lscpu | grep 'Model name'"
+    - bash -c "lscpu | grep 'CPU(s):'"
+    - bash -c "lscpu | grep 'Thread(s) per core:'"
+    - awk '/MemTotal/ { printf "%.3f \n", $2/1024/1024 }' /proc/meminfo
+    - bash -c "lsblk -e 7 -do name,rota,size --json | jq -r '.blockdevices[] | select(.rota==false) | [.name,.size]'"
+    - bash -c "lsblk -e 7 -do name,rota,size --json | jq -r '.blockdevices[] | select(.rota==true) | [.name,.size]'"
+    - lshw -C display -quiet -json
+
+- name: d
+  debug:
+    msg: "{{ out.results | map(attribute='stdout')}}"
