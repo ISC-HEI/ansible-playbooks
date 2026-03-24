@@ -1,0 +1,19 @@
+- name: Setup - basic checks and configuration # Mandatory first step before running ISC-HEI/ansible-playbooks
+  hosts: "{{ h | default('all') }}"
+  gather_facts: no
+  roles:
+    - 00_setup
+
+- name: Execution
+  hosts: "{{ h | default('all') }}"
+  become: true
+  gather_facts: no
+  tasks:
+    - name: Set os
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: os-detect
+    - name: today testing
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: users
