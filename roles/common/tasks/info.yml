@@ -2,9 +2,9 @@
   ansible.builtin.command: "{{ item }}"
   register: out
   with_items:
-    - dmidecode system-manufacturer
-    - dmidecode system-product-name
-    - dmidecode system-serial-number
+    - dmidecode -s system-manufacturer
+    - dmidecode -s system-product-name
+    - dmidecode -s system-serial-number
     - bash -c "lscpu | grep 'Model name'"
     - bash -c "lscpu | grep 'CPU(s):'"
     - bash -c "lscpu | grep 'Thread(s) per core:'"
