@@ -35,6 +35,9 @@
   set_fact:
     homes: "{{ all_users_info.results }}"
 
+- debug:
+    msg: "{{ all_users_info.results }}"
+
 ##############################################################################
 # Overwrite defaults for user who have never login
 ##############################################################################
@@ -87,3 +90,86 @@
     line: '\g<1>[01;31m\\]\\u\g<3>'
     backrefs: yes
     state: present
+
+##############################################################################
+# Create per user storage and simlinks
+# FIXME : where to put this?
+##############################################################################
+
+- name: per user storage .apptainer
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    path: "/data/disk01/apptainer/{{ item }}/.apptainer"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{ all_users }}"
+
+- name: per user storage datasets
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    path: "/data/space/datasets/{{ item }}"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{ all_users }}"
+
+- name: per user storage results
+  when: ansible_facts['hostname'] == 'disco'
+  ansible.builtin.file:
+    path: "/data/shared/{{ item }}/results"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{ all_users }}"
+
+- name: per user storage shared_datasets
+  when: ansible_facts['hostname'] == 'disco'
+  ansible.builtin.file:
+    path: "/data/shared/{{ item }}/shared_datasets"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{ all_users }}"
+
+##############################################################################
+
+- name: per user storage link .apptainer
+  ignore_errors: true
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    state: link
+    src: "/data/disk01/apptainer/{{ item.item }}/.apptainer"
+    dest: "{{ item.home }}/.apptainer"
+    force: yes
+  with_items: "{{ all_users_info.results }} "
+
+- name: per user storage link datasets
+  ignore_errors: true
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    state: link
+    src: "/data/space/datasets/{{ item.item }}"
+    dest: "{{ item.home }}/datasets"
+    force: yes
+  with_items: "{{ all_users_info.results }} "
+
+- name: per user storage link results
+  ignore_errors: true
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    state: link
+    src: "/data/shared/{{ item.item }}/results"
+    dest: "{{ item.home }}/results"
+    force: yes
+  with_items: "{{ all_users_info.results }} "
+
+- name: per user storage link shared_datasets
+  ignore_errors: true
+  when: ansible_facts['hostname'] == 'disco' or ansible_facts['hostname'] == 'chacha'
+  ansible.builtin.file:
+    state: link
+    src: "/data/shared/{{ item.item }}/shared_datasets"
+    dest: "{{ item.home }}/shared_datasets"
+    force: yes
+  with_items: "{{ all_users_info.results }} "
