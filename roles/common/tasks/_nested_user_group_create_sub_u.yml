@@ -17,6 +17,15 @@
   with_items:
     - "{{ u | map(attribute='name') }}"
 
+- name: revoked users authorized_key
+  ansible.posix.authorized_key:
+    manage_dir: true
+    user: "{{ item }}"
+    key: "{{ lookup('file', conf_dir ~ '/authorized_keys/REVOKED.pub') }}"
+    state: "absent"
+  with_items:
+    - "{{ u | map(attribute='name') }}"
+
 - name: Allow mounting cifs shares
   ansible.builtin.lineinfile:
     path: "/etc/sudoers.d/{{ item | regex_replace('\\.','') }}"
