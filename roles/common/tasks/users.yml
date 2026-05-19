@@ -35,9 +35,6 @@
   set_fact:
     homes: "{{ all_users_info.results }}"
 
-- debug:
-    msg: "{{ all_users_info.results }}"
-
 ##############################################################################
 # Overwrite defaults for user who have never login
 ##############################################################################
